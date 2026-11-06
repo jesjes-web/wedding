@@ -83,10 +83,6 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 var REPO_OWNER = 'jesjes-web';
 var REPO_NAME = 'wedding';
 var TARGET_FILE = 'index.html';
-
-// ----------------------------------------
-// SET YOUR DESIRED ADMIN PASSWORD HERE:
-// ----------------------------------------
 var ADMIN_PASSWORD = 'yourWeddingPassword123';
 
 var D = JSON.parse(document.getElementById('data').textContent);
@@ -182,11 +178,14 @@ function admin() {
   p.id = 'panel';
   document.body.appendChild(p);
 
+  var hasToken = !!localStorage.getItem('gh_token');
+
   p.innerHTML = '<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>' +
     '<div class="bar" style="top:0;position:sticky;z-index:2;background:#fffaf5;border-bottom:1px solid #e0d0c0;padding-bottom:10px">' +
-    '<label style="margin:0 0 4px 0">GitHub Token</label>' +
-    '<input type="password" id="ghToken" value="' + (localStorage.getItem('gh_token') || '') + '" placeholder="Paste ghp_ token here">' +
-    '<button id="cloudSave" style="background:#2e7d32;width:100%;margin-top:6px">🚀 Save Directly to Web</button>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+    '<small style="color:' + (hasToken ? '#2e7d32' : '#d32f2f') + ';font-weight:600">' + (hasToken ? '● Token Linked in Browser' : '○ No Token Set') + '</small>' +
+    '<button class="alt" id="setTokenBtn" style="padding:4px 8px;font-size:11px">' + (hasToken ? 'Update Token' : 'Set Token') + '</button></div>' +
+    '<button id="cloudSave" style="background:#2e7d32;width:100%">🚀 Save Directly to Web</button>' +
     '<div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div></div>' +
     '<label>Names of the couple</label><input id="a1" value="' + esc(W.couple) + '">' +
     '<label>Venue</label><input id="a2" value="' + esc(W.venue) + '">' +
@@ -207,6 +206,19 @@ function admin() {
     '<h3>Rules (one per line)</h3><textarea id="b3">' + esc(W.rules.join('\n')) + '</textarea>' +
     '<h3>Guest photo upload</h3><label>Link to shared album (must start with https://)</label><input id="b4" value="' + esc(W.photoLink) + '" placeholder="https://photos.app.goo.gl/...">' +
     '<div style="margin-top:20px"><button id="save" class="alt" style="width:100%">💾 Download Backup File</button></div>';
+
+  $('#setTokenBtn').onclick = function() {
+    var cur = localStorage.getItem('gh_token') || '';
+    var input = prompt('Paste your GitHub Personal Access Token (starts with ghp_):', cur);
+    if (input !== null) {
+      input = input.trim();
+      if (input) {
+        localStorage.setItem('gh_token', input);
+        adminClose();
+        admin();
+      }
+    }
+  };
 
   function renderGuestList() {
     var gl = $('#gl');
@@ -284,58 +296,56 @@ function admin() {
     $('#st').textContent = 'Imported ' + countAdded + ' guest(s). Scroll up to check!';
   };
 
-  $('#x').onclick = function() { p.remove(); };
+  function adminClose() { if (p) p.remove(); }
+  $('#x').onclick = adminClose;
 
   function buildFullHtml() {
     grab();
     W.guests = W.guests.filter(function(g) { return g.name.trim(); });
     var jsonStr = JSON.stringify(W, null, 2).replace(/</g, '\\u003c');
+    
+    // Remove the panel temporarily before grabbing HTML to guarantee clean output
+    var wasOpen = !!$('#panel');
+    if (wasOpen) p.remove();
     var full = '<!doctype html>\n' + document.documentElement.outerHTML;
+    if (wasOpen) document.body.appendChild(p);
+
     return full.replace(/(<script type="application\/json" id="data">)[\s\S]*?(<\/script>)/, function(match, start, end) {
       return start + '\n' + jsonStr + '\n' + end;
     });
   }
 
   $('#cloudSave').onclick = async function() {
-    var tokenInput = $('#ghToken').value.trim();
+    var token = (localStorage.getItem('gh_token') || '').trim();
     var st = $('#st');
-    if (!tokenInput) {
+    if (!token) {
       st.style.color = '#d32f2f';
-      st.textContent = 'Please enter your GitHub token above.';
+      st.textContent = 'Click "Set Token" above to link your GitHub token first.';
       return;
     }
-    localStorage.setItem('gh_token', tokenInput);
     st.style.color = '#1976d2';
-    st.textContent = 'Checking repository details...';
+    st.textContent = 'Saving directly to GitHub...';
 
     try {
       var repoRes = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME, {
         headers: {
-          'Authorization': 'token ' + tokenInput,
+          'Authorization': 'token ' + token,
           'Accept': 'application/vnd.github.v3+json'
         }
       });
-      if (!repoRes.ok) {
-        var rErr = await repoRes.json();
-        throw new Error('Access denied: ' + (rErr.message || repoRes.statusText));
-      }
+      if (!repoRes.ok) throw new Error('Repository access error (' + repoRes.status + ')');
       var repoData = await repoRes.json();
       var defaultBranch = repoData.default_branch || 'main';
 
       var fileUrl = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + TARGET_FILE + '?ref=' + defaultBranch + '&_t=' + Date.now();
       var fileRes = await fetch(fileUrl, {
         headers: {
-          'Authorization': 'token ' + tokenInput,
+          'Authorization': 'token ' + token,
           'Accept': 'application/vnd.github.v3+json'
         }
       });
-      if (!fileRes.ok) {
-        var fErr = await fileRes.json();
-        throw new Error('File lookup failed: ' + (fErr.message || fileRes.statusText));
-      }
+      if (!fileRes.ok) throw new Error('File lookup failed (' + fileRes.status + ')');
       var fileJson = await fileRes.json();
-
-      st.textContent = 'Committing changes to ' + defaultBranch + '...';
 
       var updatedHtml = buildFullHtml();
       var bytes = new TextEncoder().encode(updatedHtml);
@@ -349,7 +359,7 @@ function admin() {
       var putRes = await fetch(putUrl, {
         method: 'PUT',
         headers: {
-          'Authorization': 'token ' + tokenInput,
+          'Authorization': 'token ' + token,
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
         },
@@ -363,11 +373,11 @@ function admin() {
 
       if (!putRes.ok) {
         var pErr = await putRes.json();
-        throw new Error('Save rejected: ' + (pErr.message || putRes.status));
+        throw new Error(pErr.message || 'Save rejected');
       }
 
       st.style.color = '#2e7d32';
-      st.textContent = '✅ Saved! Changes will go live on the site in ~60 seconds.';
+      st.textContent = '✅ Saved! Changes live in ~60 seconds.';
       D = JSON.parse(JSON.stringify(W));
       view();
     } catch (err) {
@@ -391,7 +401,6 @@ function admin() {
 
 view();
 
-// Check for #admin in URL and guard with password modal:
 (function() {
   function checkAdmin() {
     if (location.hash === '#admin') {
