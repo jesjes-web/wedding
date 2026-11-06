@@ -1,7 +1,10 @@
-<!doctype html><html lang="en" data-theme="light" style="color-scheme: light;"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="en" data-theme="light" style="color-scheme: light;">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Our Wedding · May 15, 2027</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&amp;family=Jost:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*:before,*:after{box-sizing:inherit}
@@ -40,234 +43,301 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 .g{display:grid;grid-template-columns:1fr 62px 58px 34px;gap:6px;margin-bottom:6px}
 .g button{padding:6px}
 .bar{position:sticky;bottom:0;background:#fffaf5;padding:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.hide{display:none}
-</style></head><body>
+</style>
+</head>
+<body>
 <div id="bg"></div>
 <div id="app"></div>
-<script type="application/json" id="data">{"couple":"Bride & Groom","date":"2027-05-15","time":"15:00","venue":"Villa Monica, Pateros","welcome":"We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!","bg":"","showSeats":true,"photoLink":"","palette":"#d9a7a0,#c9b79c,#9caf88,#f3ece4","rules":["Please arrive 30 minutes before the ceremony.","Kindly silence your phones during the ceremony.","Our photographers will capture every moment, so please keep phones away during the walk down the aisle.","Please stay in your assigned seat and table.","Enjoy, dance, and have fun!"],"dress":["Semi-formal / formal attire.","Soft earth tones and pastels are welcome (see the colors below).","Please avoid all white, ivory, and cream, which are reserved for the bride.","Comfortable shoes are a good idea, because the garden venue has grass and stone paths."],"guests":[{"name":"Jester Dalde","table":"1","seat":"1"},{"name":"Sample Guest Two","table":"1","seat":"2"},{"name":"Sample Guest Three","table":"2","seat":"1"}]}</script>
+<script type="application/json" id="data">
+{
+  "couple": "Bride & Groom",
+  "date": "2027-05-15",
+  "time": "15:00",
+  "venue": "Villa Monica, Pateros",
+  "welcome": "We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!",
+  "bg": "",
+  "showSeats": true,
+  "photoLink": "",
+  "palette": "#d9a7a0,#c9b79c,#9caf88,#f3ece4",
+  "rules": [
+    "Please arrive 30 minutes before the ceremony.",
+    "Kindly silence your phones during the ceremony.",
+    "Our photographers will capture every moment, so please keep phones away during the walk down the aisle.",
+    "Please stay in your assigned seat and table.",
+    "Enjoy, dance, and have fun!"
+  ],
+  "dress": [
+    "Semi-formal / formal attire.",
+    "Soft earth tones and pastels are welcome (see the colors below).",
+    "Please avoid all white, ivory, and cream, which are reserved for the bride.",
+    "Comfortable shoes are a good idea, because the garden venue has grass and stone paths."
+  ],
+  "guests": [
+    {"name": "Jester Dalde", "table": "1", "seat": "1"},
+    {"name": "Sample Guest Two", "table": "1", "seat": "2"},
+    {"name": "Sample Guest Three", "table": "2", "seat": "1"}
+  ]
+}
+</script>
 <script>
-const REPO_OWNER = 'jesjes-web';
-const REPO_NAME = 'wedding';
+var REPO_OWNER = 'jesjes-web';
+var REPO_NAME = 'wedding';
 
-let D=JSON.parse(document.getElementById('data').textContent),W=null,tick=null;
-const $=s=>document.querySelector(s);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const target=()=>new Date(D.date+'T'+D.time+':00+08:00');
-const fmtDate=()=>new Date(D.date+'T12:00:00+08:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric',timeZone:'Asia/Manila'});
+var D = JSON.parse(document.getElementById('data').textContent);
+var W = null;
+var tick = null;
 
-function view(){
-  $('#bg').style.backgroundImage=D.bg?'url("'+D.bg+'")':'';
-  const li=a=>a.map(x=>'<li>'+esc(x)+'</li>').join('');
-  const sw=D.palette.split(',').map(c=>c.trim()).filter(Boolean).map(c=>'<i style="background:'+esc(c)+'"></i>').join('');
-  $('#app').innerHTML=`<div class="wrap">
-   <div class="hero"><small>Together with their families</small><h1>${esc(D.couple)}</h1>
-   <p>${esc(fmtDate())}</p><p>${esc(D.venue)}</p>
-   <div class="cd" id="cd"></div></div>
-   <p class="msg">${esc(D.welcome)}</p>
-   <div class="card"><h2>Find your seat</h2>
-   ${D.showSeats?`<div class="row"><input id="q" placeholder="Type your name…" autocomplete="off"><button id="go">Search</button></div><div id="res"></div>`:`<p>Seating will be revealed soon. Please check back closer to the day. 💛</p>`}</div>
-   <div class="card"><h2>What to wear</h2><ul>${li(D.dress)}</ul><div class="sw">${sw}</div></div>
-   <div class="card"><h2>Guest guidelines</h2><ul>${li(D.rules)}</ul></div>
-   ${/^https:\/\//.test(D.photoLink||'')?`<div class="card"><h2>Share your photos</h2><p style="margin:0 0 14px;line-height:1.6">Took a great picture at our wedding? We’d love to see it! Tap the button to upload your photos.</p><a href="${esc(D.photoLink)}" target="_blank" rel="noopener" style="display:inline-block;background:#8a5642;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:500">📷 Upload your photos</a></div>`:`<div class="card"><h2>Share your photos</h2><p style="margin:0;line-height:1.6">Photo sharing opens on our wedding day. Come back then to upload the pictures you take! 📷</p></div>`}
-   <footer>With love, ${esc(D.couple)} · ${esc(D.venue)}</footer></div>`;
-  clearInterval(tick);tick=setInterval(count,1000);count();
-  const q=$('#q');if(q){$('#go').onclick=search;q.onkeydown=e=>{if(e.key==='Enter')search()}}
-}
-function count(){
-  const el=$('#cd');if(!el)return;
-  let s=Math.floor((target()-Date.now())/1000);
-  if(s<=0){el.innerHTML='<div style="padding:14px 22px"><b style="font-size:26px">'+(s>-86400?'Today is the day! 💍':'Thank you for celebrating with us')+'</b></div>';return}
-  const v=[['Days',Math.floor(s/86400)],['Hours',Math.floor(s%86400/3600)],['Minutes',Math.floor(s%3600/60)],['Seconds',s%60]];
-  el.innerHTML=v.map(x=>'<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('');
-}
-function search(){
-  const t=$('#q').value.trim().toLowerCase(),r=$('#res');
-  if(t.length<2){r.innerHTML='<div class="seat">Please type at least 2 letters of your name.</div>';return}
-  const m=D.guests.filter(g=>g.name.toLowerCase().includes(t));
-  r.innerHTML=m.length?m.map(g=>`<div class="seat">Welcome, <b>${esc(g.name)}</b>!<br>You are at Table <b>${esc(g.table)}</b>${g.seat?', Seat <b>'+esc(g.seat)+'</b>':''}.</div>`).join(''):'<div class="seat">We couldn’t find that name. Try your first or last name, or ask one of our ushers for help.</div>';
+function $(s) { return document.querySelector(s); }
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
 }
 
-/* ---------- Admin ---------- */
-function admin(){
-  W=JSON.parse(JSON.stringify(D));
-  const p=document.createElement('div');p.id='panel';document.body.appendChild(p);
+function target() { return new Date(D.date + 'T' + D.time + ':00+08:00'); }
+function fmtDate() {
+  return new Date(D.date + 'T12:00:00+08:00').toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila'
+  });
+}
 
-  p.innerHTML=`
-  <div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>
-  <label>Names of the couple</label><input id="a1" value="${esc(W.couple)}">
-  <label>Venue</label><input id="a2" value="${esc(W.venue)}">
-  <div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="${esc(W.date)}"></div><div style="flex:1"><label>Ceremony time</label><input id="a4" type="time" value="${esc(W.time)}"></div></div>
-  <label>Welcome message</label><textarea id="a5">${esc(W.welcome)}</textarea>
-  <label><input type="checkbox" id="a6" style="width:auto" ${W.showSeats?'checked':''}> Show seat lookup to guests</label>
-  <h3>Prenup photo background</h3>
-  <label>Background image URL or relative file name</label><input id="a7" value="${esc(W.bg)}" placeholder="prenup.jpg">
-  <h3>Guests &amp; seats</h3>
-  <div id="gl"></div>
-  <button class="alt" id="add" style="margin-top:6px">+ Add guest</button>
-  <label style="margin-top:14px">Or paste many (one per line: Name, Table, Seat — or paste from Excel):</label>
-  <textarea id="bulk" placeholder="Maria Santos, 3, 4&#10;Juan Dela Cruz	3	5"></textarea>
-  <button class="alt" id="imp" style="margin-top:6px">Import lines</button>
-  <h3>Dress code (one per line)</h3><textarea id="b1">${esc(W.dress.join('\n'))}</textarea>
-  <label>Color palette (hex codes, comma separated)</label><input id="b2" value="${esc(W.palette)}">
-  <h3>Rules (one per line)</h3><textarea id="b3">${esc(W.rules.join('\n'))}</textarea>
-  <h3>Guest photo upload</h3><label>Link to your shared album (must start with https://)</label><input id="b4" value="${esc(W.photoLink)}" placeholder="https://photos.app.goo.gl/...">
-  
-  <h3>Auto-Sync to GitHub</h3>
-  <label>GitHub Personal Access Token (PAT)</label>
-  <input type="password" id="ghToken" value="${localStorage.getItem('gh_token')||''}" placeholder="ghp_xxxxxxxxxxxx">
-  <small style="color:#777;display:block;margin-bottom:10px">Saved in your browser private storage.</small>
-
-  <div class="bar">
-    <button id="cloudSave" style="background:#2e7d32">🚀 Save Directly to Web</button>
-    <button id="save" class="alt">💾 Download File</button>
-    <div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div>
-  </div>`;
-
-  const renderGuestList = () => {
-    const gl = $('#gl');
-    gl.innerHTML = W.guests.map((g, i) => `
-      <div class="g" data-row="${i}">
-        <input class="g-name" value="${esc(g.name)}" placeholder="Name">
-        <input class="g-table" value="${esc(g.table)}" placeholder="Table">
-        <input class="g-seat" value="${esc(g.seat)}" placeholder="Seat">
-        <button class="alt del-btn" data-del="${i}">✕</button>
-      </div>
-    `).join('');
+function view() {
+  $('#bg').style.backgroundImage = D.bg ? 'url("' + D.bg + '")' : '';
+  var li = function(arr) {
+    return arr.map(function(x) { return '<li>' + esc(x) + '</li>'; }).join('');
   };
+  var sw = D.palette.split(',').map(function(c) { return c.trim(); }).filter(Boolean).map(function(c) {
+    return '<i style="background:' + esc(c) + '"></i>';
+  }).join('');
 
-  const syncCurrentRows = () => {
-    const rows = p.querySelectorAll('.g');
-    const updated = [];
-    rows.forEach(r => {
-      const name = r.querySelector('.g-name').value;
-      const table = r.querySelector('.g-table').value;
-      const seat = r.querySelector('.g-seat').value;
-      updated.push({ name, table, seat });
+  var photoSec = /^https:\/\//.test(D.photoLink || '')
+    ? '<div class="card"><h2>Share your photos</h2><p style="margin:0 0 14px;line-height:1.6">Took a great picture at our wedding? We’d love to see it! Tap the button to upload your photos.</p><a href="' + esc(D.photoLink) + '" target="_blank" rel="noopener" style="display:inline-block;background:#8a5642;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:500">📷 Upload your photos</a></div>'
+    : '<div class="card"><h2>Share your photos</h2><p style="margin:0;line-height:1.6">Photo sharing opens on our wedding day. Come back then to upload the pictures you take! 📷</p></div>';
+
+  $('#app').innerHTML = '<div class="wrap">' +
+    '<div class="hero"><small>Together with their families</small><h1>' + esc(D.couple) + '</h1>' +
+    '<p>' + esc(fmtDate()) + '</p><p>' + esc(D.venue) + '</p>' +
+    '<div class="cd" id="cd"></div></div>' +
+    '<p class="msg">' + esc(D.welcome) + '</p>' +
+    '<div class="card"><h2>Find your seat</h2>' +
+    (D.showSeats ? '<div class="row"><input id="q" placeholder="Type your name…" autocomplete="off"><button id="go">Search</button></div><div id="res"></div>' : '<p>Seating will be revealed soon. Please check back closer to the day. 💛</p>') +
+    '</div>' +
+    '<div class="card"><h2>What to wear</h2><ul>' + li(D.dress) + '</ul><div class="sw">' + sw + '</div></div>' +
+    '<div class="card"><h2>Guest guidelines</h2><ul>' + li(D.rules) + '</ul></div>' +
+    photoSec +
+    '<footer>With love, ' + esc(D.couple) + ' · ' + esc(D.venue) + '</footer></div>';
+
+  clearInterval(tick);
+  tick = setInterval(count, 1000);
+  count();
+
+  var q = $('#q');
+  if (q) {
+    $('#go').onclick = search;
+    q.onkeydown = function(e) { if (e.key === 'Enter') search(); };
+  }
+}
+
+function count() {
+  var el = $('#cd');
+  if (!el) return;
+  var s = Math.floor((target() - Date.now()) / 1000);
+  if (s <= 0) {
+    el.innerHTML = '<div style="padding:14px 22px"><b style="font-size:26px">' + (s > -86400 ? 'Today is the day! 💍' : 'Thank you for celebrating with us') + '</b></div>';
+    return;
+  }
+  var v = [
+    ['Days', Math.floor(s / 86400)],
+    ['Hours', Math.floor((s % 86400) / 3600)],
+    ['Minutes', Math.floor((s % 3600) / 60)],
+    ['Seconds', s % 60]
+  ];
+  el.innerHTML = v.map(function(x) {
+    return '<div><b>' + x[1] + '</b><span>' + x[0] + '</span></div>';
+  }).join('');
+}
+
+function search() {
+  var t = $('#q').value.trim().toLowerCase(), r = $('#res');
+  if (t.length < 2) {
+    r.innerHTML = '<div class="seat">Please type at least 2 letters of your name.</div>';
+    return;
+  }
+  var m = D.guests.filter(function(g) { return g.name.toLowerCase().indexOf(t) !== -1; });
+  r.innerHTML = m.length
+    ? m.map(function(g) { return '<div class="seat">Welcome, <b>' + esc(g.name) + '</b>!<br>You are at Table <b>' + esc(g.table) + '</b>' + (g.seat ? ', Seat <b>' + esc(g.seat) + '</b>' : '') + '.</div>'; }).join('')
+    : '<div class="seat">We couldn’t find that name. Try your first or last name, or ask one of our ushers for help.</div>';
+}
+
+function admin() {
+  W = JSON.parse(JSON.stringify(D));
+  var p = document.createElement('div');
+  p.id = 'panel';
+  document.body.appendChild(p);
+
+  p.innerHTML = '<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>' +
+    '<label>Names of the couple</label><input id="a1" value="' + esc(W.couple) + '">' +
+    '<label>Venue</label><input id="a2" value="' + esc(W.venue) + '">' +
+    '<div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="' + esc(W.date) + '"></div>' +
+    '<div style="flex:1"><label>Ceremony time</label><input id="a4" type="time" value="' + esc(W.time) + '"></div></div>' +
+    '<label>Welcome message</label><textarea id="a5">' + esc(W.welcome) + '</textarea>' +
+    '<label><input type="checkbox" id="a6" style="width:auto" ' + (W.showSeats ? 'checked' : '') + '> Show seat lookup to guests</label>' +
+    '<h3>Prenup photo background</h3>' +
+    '<label>Background image URL or file name</label><input id="a7" value="' + esc(W.bg) + '" placeholder="prenup.jpg">' +
+    '<h3>Guests &amp; seats</h3>' +
+    '<div id="gl"></div>' +
+    '<button class="alt" id="add" style="margin-top:6px">+ Add guest</button>' +
+    '<label style="margin-top:14px">Or paste many (one per line: Name, Table, Seat — or paste from Excel):</label>' +
+    '<textarea id="bulk" placeholder="Maria Santos, 3, 4"></textarea>' +
+    '<button class="alt" id="imp" style="margin-top:6px">Import lines</button>' +
+    '<h3>Dress code (one per line)</h3><textarea id="b1">' + esc(W.dress.join('\n')) + '</textarea>' +
+    '<label>Color palette (hex codes, comma separated)</label><input id="b2" value="' + esc(W.palette) + '">' +
+    '<h3>Rules (one per line)</h3><textarea id="b3">' + esc(W.rules.join('\n')) + '</textarea>' +
+    '<h3>Guest photo upload</h3><label>Link to shared album (must start with https://)</label><input id="b4" value="' + esc(W.photoLink) + '" placeholder="https://photos.app.goo.gl/...">' +
+    '<h3>Auto-Sync to GitHub</h3>' +
+    '<label>GitHub Personal Access Token (PAT)</label>' +
+    '<input type="password" id="ghToken" value="' + (localStorage.getItem('gh_token') || '') + '" placeholder="ghp_xxxxxxxxxxxx">' +
+    '<div class="bar">' +
+    '<button id="cloudSave" style="background:#2e7d32">🚀 Save Directly to Web</button>' +
+    '<button id="save" class="alt">💾 Download File</button>' +
+    '<div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div></div>';
+
+  function renderGuestList() {
+    var gl = $('#gl');
+    gl.innerHTML = W.guests.map(function(g, i) {
+      return '<div class="g">' +
+        '<input class="g-name" value="' + esc(g.name) + '" placeholder="Name">' +
+        '<input class="g-table" value="' + esc(g.table) + '" placeholder="Table">' +
+        '<input class="g-seat" value="' + esc(g.seat) + '" placeholder="Seat">' +
+        '<button class="alt del-btn" data-del="' + i + '">✕</button></div>';
+    }).join('');
+  }
+
+  function syncRows() {
+    var rows = p.querySelectorAll('.g');
+    var updated = [];
+    rows.forEach(function(r) {
+      updated.push({
+        name: r.querySelector('.g-name').value,
+        table: r.querySelector('.g-table').value,
+        seat: r.querySelector('.g-seat').value
+      });
     });
     W.guests = updated;
-  };
+  }
 
-  const grab = () => {
-    syncCurrentRows();
+  function grab() {
+    syncRows();
     W.couple = $('#a1').value;
     W.venue = $('#a2').value;
     W.date = $('#a3').value || W.date;
     W.time = $('#a4').value || W.time;
     W.welcome = $('#a5').value;
     W.showSeats = $('#a6').checked;
-    W.dress = $('#b1').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    W.dress = $('#b1').value.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
     W.palette = $('#b2').value;
     W.photoLink = $('#b4').value.trim();
     W.bg = $('#a7').value.trim();
-    W.rules = $('#b3').value.split('\n').map(s=>s.trim()).filter(Boolean);
-  };
+    W.rules = $('#b3').value.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
+  }
 
-  // Delegate delete clicks
-  $('#gl').addEventListener('click', e => {
+  $('#gl').addEventListener('click', function(e) {
     if (e.target.classList.contains('del-btn')) {
-      syncCurrentRows();
-      const idx = parseInt(e.target.dataset.del, 10);
+      syncRows();
+      var idx = parseInt(e.target.getAttribute('data-del'), 10);
       W.guests.splice(idx, 1);
       renderGuestList();
     }
   });
 
-  // Add empty row
-  $('#add').onclick = () => {
-    syncCurrentRows();
+  $('#add').onclick = function() {
+    syncRows();
     W.guests.push({ name: '', table: '', seat: '' });
     renderGuestList();
-    const allNames = p.querySelectorAll('.g-name');
-    if (allNames.length) allNames[allNames.length - 1].focus();
+    var all = p.querySelectorAll('.g-name');
+    if (all.length) all[all.length - 1].focus();
   };
 
-  // Import lines (handles commas and tabs from Excel)
-  $('#imp').onclick = () => {
-    syncCurrentRows();
-    const lines = $('#bulk').value.split('\n');
-    let addedCount = 0;
-    lines.forEach(l => {
-      const text = l.trim();
-      if (!text) return;
-      // Split by tab (if copied from Excel) or comma
-      const parts = text.includes('\t') ? text.split('\t') : text.split(',');
-      const clean = parts.map(s => s.trim());
+  $('#imp').onclick = function() {
+    syncRows();
+    var lines = $('#bulk').value.split('\n');
+    var countAdded = 0;
+    lines.forEach(function(l) {
+      var t = l.trim();
+      if (!t) return;
+      var parts = t.indexOf('\t') !== -1 ? t.split('\t') : t.split(',');
+      var clean = parts.map(function(s) { return s.trim(); });
       if (clean[0]) {
-        W.guests.push({
-          name: clean[0],
-          table: clean[1] || '',
-          seat: clean[2] || ''
-        });
-        addedCount++;
+        W.guests.push({ name: clean[0], table: clean[1] || '', seat: clean[2] || '' });
+        countAdded++;
       }
     });
     $('#bulk').value = '';
     renderGuestList();
-    const st = $('#st');
-    st.style.color = '#1976d2';
-    st.textContent = `Imported ${addedCount} guest(s). Scroll up to review!`;
+    $('#st').style.color = '#1976d2';
+    $('#st').textContent = 'Imported ' + countAdded + ' guest(s). Scroll up to check!';
   };
 
-  $('#x').onclick = () => p.remove();
+  $('#x').onclick = function() { p.remove(); };
 
-  const getNewHtml = () => {
+  function buildFullHtml() {
     grab();
-    W.guests = W.guests.filter(g => g.name.trim());
-    const json = JSON.stringify(W).replace(/</g, '\\u003c');
-    const fullHtml = '<!doctype html>' + document.documentElement.outerHTML;
-    return fullHtml.replace(/(<script type="application\/json" id="data">)[\s\S]*?<\/script>/, (m, s) => s + json + '<\/script>');
-  };
+    W.guests = W.guests.filter(function(g) { return g.name.trim(); });
+    var jsonStr = JSON.stringify(W, null, 2).replace(/</g, '\\u003c');
+    var full = '<!doctype html>\n' + document.documentElement.outerHTML;
+    return full.replace(/(<script type="application\/json" id="data">)[\s\S]*?(<\/script>)/, function(match, start, end) {
+      return start + '\n' + jsonStr + '\n' + end;
+    });
+  }
 
-  // GitHub Auto-Save
-  $('#cloudSave').onclick = async () => {
-    const token = $('#ghToken').value.trim();
-    const status = $('#st');
+  $('#cloudSave').onclick = async function() {
+    var token = $('#ghToken').value.trim();
+    var st = $('#st');
     if (!token) {
-      status.style.color = '#d32f2f';
-      status.textContent = 'Please paste your GitHub Personal Access Token above.';
+      st.style.color = '#d32f2f';
+      st.textContent = 'Please paste your GitHub Personal Access Token above.';
       return;
     }
     localStorage.setItem('gh_token', token);
-    status.style.color = '#1976d2';
-    status.textContent = 'Saving directly to GitHub...';
+    st.style.color = '#1976d2';
+    st.textContent = 'Saving directly to GitHub...';
 
     try {
-      const fileUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/index.html`;
-      const resGet = await fetch(fileUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!resGet.ok) throw new Error('Could not find file on GitHub. Check your token.');
-      const fileData = await resGet.json();
+      var url = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/index.html';
+      var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) throw new Error('Could not find repository file. Check token.');
+      var fileJson = await res.json();
 
-      const newContent = getNewHtml();
-      const base64Content = btoa(unescape(encodeURIComponent(newContent)));
+      var updatedHtml = buildFullHtml();
+      var b64 = btoa(unescape(encodeURIComponent(updatedHtml)));
 
-      const resPut = await fetch(fileUrl, {
+      var putRes = await fetch(url, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': 'Bearer ' + token,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          message: 'Update wedding details and guests via admin panel',
-          content: base64Content,
-          sha: fileData.sha
+          message: 'Update wedding guest list and site details',
+          content: b64,
+          sha: fileJson.sha
         })
       });
 
-      if (!resPut.ok) throw new Error('GitHub rejected update. Check permissions.');
-      status.style.color = '#2e7d32';
-      status.textContent = '✅ Saved to GitHub! Your site will update in 60 seconds.';
+      if (!putRes.ok) throw new Error('GitHub rejected update. Check permissions.');
+      st.style.color = '#2e7d32';
+      st.textContent = '✅ Saved to GitHub! Your site will update in ~60 seconds.';
       D = JSON.parse(JSON.stringify(W));
       view();
     } catch (err) {
-      status.style.color = '#d32f2f';
-      status.textContent = '❌ ' + err.message;
+      st.style.color = '#d32f2f';
+      st.textContent = '❌ ' + err.message;
     }
   };
 
-  // Manual Backup Download
-  $('#save').onclick = () => {
-    const out = getNewHtml();
-    const a = document.createElement('a');
+  $('#save').onclick = function() {
+    var out = buildFullHtml();
+    var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([out], { type: 'text/html' }));
     a.download = 'index.html';
     a.click();
@@ -279,6 +349,48 @@ function admin(){
 }
 
 view();
-(()=>{try{if(location.hash==='#admin'){
-  const b=document.createElement('button');b.id='adminBtn';b.textContent='⚙ Admin panel';b.onclick=()=>{if($('#panel')||$('#gate'))return;const H='87b57d68d157dc28e622efff8008d75e09a05bf10bcbcbbb39a3582058344785',sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join(''),g=document.createElement('div');g.id='gate';g.style.cssText='position:fixed;inset:0;z-index:20;background:rgba(30,18,14,.7);display:flex;align-items:center;justify-content:center;padding:20px';g.innerHTML='<div class="card" style="max-width:340px;width:100%;margin:0"><h2>Admin password</h2><input id="pw" type="password" placeholder="Enter password" autocomplete="off"><div id="pe" style="color:#a33;font-size:13px;min-height:20px;margin:6px 0"></div><div class="row"><button id="pok">Unlock</button><button class="alt" id="pno">Cancel</button></div></div>';document.body.appendChild(g);const pw=g.querySelector('#pw'),go=async()=>{try{if(await sha(pw.value)===H){g.remove();admin()}else g.querySelector('#pe').textContent='Wrong password. Please try again.'}catch(_){g.querySelector('#pe').textContent='Could not check the password here.'}};g.querySelector('#pok').onclick=go;g.querySelector('#pno').onclick=()=>g.remove();pw.onkeydown=e=>{if(e.key==='Enter')go()};pw.focus()};document.body.appendChild(b)}}catch(_){}})();
-</script></body></html>
+
+(function() {
+  try {
+    if (location.hash === '#admin') {
+      var b = document.createElement('button');
+      b.id = 'adminBtn';
+      b.textContent = '⚙ Admin panel';
+      b.onclick = function() {
+        if ($('#panel') || $('#gate')) return;
+        var H = '87b57d68d157dc28e622efff8008d75e09a05bf10bcbcbbb39a3582058344785';
+        var sha = async function(s) {
+          return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(function(x) {
+            return x.toString(16).padStart(2, '0');
+          }).join('');
+        };
+        var g = document.createElement('div');
+        g.id = 'gate';
+        g.style.cssText = 'position:fixed;inset:0;z-index:20;background:rgba(30,18,14,.7);display:flex;align-items:center;justify-content:center;padding:20px';
+        g.innerHTML = '<div class="card" style="max-width:340px;width:100%;margin:0"><h2>Admin password</h2><input id="pw" type="password" placeholder="Enter password" autocomplete="off"><div id="pe" style="color:#a33;font-size:13px;min-height:20px;margin:6px 0"></div><div class="row"><button id="pok">Unlock</button><button class="alt" id="pno">Cancel</button></div></div>';
+        document.body.appendChild(g);
+        var pw = g.querySelector('#pw');
+        var go = async function() {
+          try {
+            if (await sha(pw.value) === H) {
+              g.remove();
+              admin();
+            } else {
+              g.querySelector('#pe').textContent = 'Wrong password. Please try again.';
+            }
+          } catch (_) {
+            g.querySelector('#pe').textContent = 'Could not verify password.';
+          }
+        };
+        g.querySelector('#pok').onclick = go;
+        g.querySelector('#pno').onclick = function() { g.remove(); };
+        pw.onkeydown = function(e) { if (e.key === 'Enter') go(); };
+        pw.focus();
+      };
+      document.body.appendChild(b);
+    }
+  } catch (_) {}
+})();
+</script>
+</body>
+</html>
