@@ -43,8 +43,18 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 .hide{display:none}
 </style></head><body>
 <div id="bg"></div>
-<div id="app"></div>
-<script type="application/json" id="data">{"couple":"Bride & Groom","date":"2027-05-15","time":"15:00","venue":"Villa Monica, Pateros","welcome":"We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!","bg":"","showSeats":true,"photoLink":"","palette":"#d9a7a0,#c9b79c,#9caf88,#f3ece4","rules":["Please arrive 30 minutes before the ceremony.","Kindly silence your phones during the ceremony.","Our photographers will capture every moment, so please keep phones away during the walk down the aisle.","Please stay in your assigned seat and table.","Enjoy, dance, and have fun!"],"dress":["Semi-formal / formal attire.","Soft earth tones and pastels are welcome (see the colors below).","Please avoid all white, ivory, and cream, which are reserved for the bride.","Comfortable shoes are a good idea, because the garden venue has grass and stone paths."],"guests":[{"name":"Jester Dalde","table":"1","seat":"1"},{"name":"Sample Guest Two","table":"1","seat":"2"},{"name":"Sample Guest Three","table":"2","seat":"1"}]}</script>
+<div id="app"><div class="wrap">
+   <div class="hero"><small>Together with their families</small><h1>Bride &amp; Groom</h1>
+   <p>Saturday, May 15, 2027</p><p>Villa Monica, Pateros</p>
+   <div class="cd" id="cd"><div><b>190</b><span>Days</span></div><div><b>0</b><span>Hours</span></div><div><b>6</b><span>Minutes</span></div><div><b>17</b><span>Seconds</span></div></div></div>
+   <p class="msg">We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!</p>
+   <div class="card"><h2>Find your seat</h2>
+   <div class="row"><input id="q" placeholder="Type your name…" autocomplete="off"><button id="go">Search</button></div><div id="res"></div></div>
+   <div class="card"><h2>What to wear</h2><ul><li>Semi-formal / formal attire.</li><li>Soft earth tones and pastels are welcome (see the colors below).</li><li>Please avoid all white, ivory, and cream, which are reserved for the bride.</li><li>Comfortable shoes are a good idea, because the garden venue has grass and stone paths.</li></ul><div class="sw"><i style="background:#d9a7a0"></i><i style="background:#c9b79c"></i><i style="background:#9caf88"></i><i style="background:#f3ece4"></i></div></div>
+   <div class="card"><h2>Guest guidelines</h2><ul><li>Please arrive 30 minutes before the ceremony.</li><li>Kindly silence your phones during the ceremony.</li><li>Our photographers will capture every moment, so please keep phones away during the walk down the aisle.</li><li>Please stay in your assigned seat and table.</li><li>Enjoy, dance, and have fun!</li></ul></div>
+   <div class="card"><h2>Share your photos</h2><p style="margin:0;line-height:1.6">Photo sharing opens on our wedding day. Come back then to upload the pictures you take! 📷</p></div>
+   <footer>With love, Bride &amp; Groom · Villa Monica, Pateros</footer></div></div>
+<script type="application/json" id="data">{"couple":"Jes & Charm","date":"2027-05-15","time":"15:00","venue":"Villa Monica, Pateros","welcome":"We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!","bg":"","showSeats":true,"photoLink":"","palette":"#d9a7a0,#c9b79c,#9caf88,#f3ece4","rules":["Please arrive 30 minutes before the ceremony.","Kindly silence your phones during the ceremony.","Our photographers will capture every moment, so please keep phones away during the walk down the aisle.","Please stay in your assigned seat and table.","Enjoy, dance, and have fun!"],"dress":["Semi-formal / formal attire.","Soft earth tones and pastels are welcome (see the colors below).","Please avoid all white, ivory, and cream, which are reserved for the bride.","Comfortable shoes are a good idea, because the garden venue has grass and stone paths."],"guests":[{"name":"Jester Dalde","table":"1","seat":"1"},{"name":"Sample Guest Two","table":"1","seat":"2"},{"name":"Sample Guest Three","table":"2","seat":"1"}]}</script>
 <script>
 const REPO_OWNER = 'jesjes-web';
 const REPO_NAME = 'wedding';
@@ -196,4 +206,39 @@ function admin(){
 view();
 (()=>{try{if(location.hash==='#admin'){
   const b=document.createElement('button');b.id='adminBtn';b.textContent='⚙ Admin panel';b.onclick=()=>{if($('#panel')||$('#gate'))return;const H='87b57d68d157dc28e622efff8008d75e09a05bf10bcbcbbb39a3582058344785',sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join(''),g=document.createElement('div');g.id='gate';g.style.cssText='position:fixed;inset:0;z-index:20;background:rgba(30,18,14,.7);display:flex;align-items:center;justify-content:center;padding:20px';g.innerHTML='<div class="card" style="max-width:340px;width:100%;margin:0"><h2>Admin password</h2><input id="pw" type="password" placeholder="Enter password" autocomplete="off"><div id="pe" style="color:#a33;font-size:13px;min-height:20px;margin:6px 0"></div><div class="row"><button id="pok">Unlock</button><button class="alt" id="pno">Cancel</button></div></div>';document.body.appendChild(g);const pw=g.querySelector('#pw'),go=async()=>{try{if(await sha(pw.value)===H){g.remove();admin()}else g.querySelector('#pe').textContent='Wrong password. Please try again.'}catch(_){g.querySelector('#pe').textContent='Could not check the password here.'}};g.querySelector('#pok').onclick=go;g.querySelector('#pno').onclick=()=>g.remove();pw.onkeydown=e=>{if(e.key==='Enter')go()};pw.focus()};document.body.appendChild(b)}}catch(_){}})();
-</script></body></html>
+</script><button id="adminBtn">⚙ Admin panel</button>
+<div id="panel">
+  <div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>
+  <label>Names of the couple</label><input id="a1" value="Bride &amp; Groom">
+  <label>Venue</label><input id="a2" value="Villa Monica, Pateros">
+  <div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="2027-05-15"></div><div style="flex:1"><label>Ceremony time</label><input id="a4" type="time" value="15:00"></div></div>
+  <label>Welcome message</label><textarea id="a5">We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!</textarea>
+  <label><input type="checkbox" id="a6" style="width:auto" checked=""> Show seat lookup to guests</label>
+  <h3>Prenup photo background</h3>
+  <label>Background image URL or relative file name</label><input id="a7" value="" placeholder="prenup.jpg">
+  <h3>Guests &amp; seats</h3>
+  <div id="gl"><div class="g"><input data-i="0" data-k="name" value="Jester Dalde" placeholder="Name"><input data-i="0" data-k="table" value="1" placeholder="Table"><input data-i="0" data-k="seat" value="1" placeholder="Seat"><button class="alt" data-d="0">✕</button></div><div class="g"><input data-i="1" data-k="name" value="Sample Guest Two" placeholder="Name"><input data-i="1" data-k="table" value="1" placeholder="Table"><input data-i="1" data-k="seat" value="2" placeholder="Seat"><button class="alt" data-d="1">✕</button></div><div class="g"><input data-i="2" data-k="name" value="Sample Guest Three" placeholder="Name"><input data-i="2" data-k="table" value="2" placeholder="Table"><input data-i="2" data-k="seat" value="1" placeholder="Seat"><button class="alt" data-d="2">✕</button></div></div>
+  <button class="alt" id="add">+ Add guest</button>
+  <label>Or paste many (one per line: Name, Table, Seat)</label><textarea id="bulk" placeholder="Maria Santos, 3, 4"></textarea><button class="alt" id="imp">Import lines</button>
+  <h3>Dress code (one per line)</h3><textarea id="b1">Semi-formal / formal attire.
+Soft earth tones and pastels are welcome (see the colors below).
+Please avoid all white, ivory, and cream, which are reserved for the bride.
+Comfortable shoes are a good idea, because the garden venue has grass and stone paths.</textarea>
+  <label>Color palette (hex codes, comma separated)</label><input id="b2" value="#d9a7a0,#c9b79c,#9caf88,#f3ece4">
+  <h3>Rules (one per line)</h3><textarea id="b3">Please arrive 30 minutes before the ceremony.
+Kindly silence your phones during the ceremony.
+Our photographers will capture every moment, so please keep phones away during the walk down the aisle.
+Please stay in your assigned seat and table.
+Enjoy, dance, and have fun!</textarea>
+  <h3>Guest photo upload</h3><label>Link to your shared album (must start with https://)</label><input id="b4" value="" placeholder="https://photos.app.goo.gl/...">
+  
+  <h3>Auto-Sync to GitHub</h3>
+  <label>GitHub Personal Access Token (PAT)</label>
+  <input type="password" id="ghToken" value="" placeholder="ghp_xxxxxxxxxxxx">
+  <small style="color:#777;display:block;margin-bottom:10px">Saved safely in your browser's private storage.</small>
+
+  <div class="bar">
+    <button id="cloudSave" style="background:#2e7d32">🚀 Save Directly to Web</button>
+    <button id="save" class="alt">💾 Download File</button>
+    <div id="st" style="font-size: 13px; width: 100%; margin-top: 6px; font-weight: 500; color: rgb(25, 118, 210);">Publishing changes to GitHub...</div>
+  </div></div></body></html>
