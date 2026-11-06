@@ -182,7 +182,7 @@ function admin() {
 
   p.innerHTML = '<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>' +
     '<div class="bar" style="top:0;position:sticky;z-index:2;background:#fffaf5;border-bottom:1px solid #e0d0c0;padding-bottom:10px">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;width:100%">' +
     '<small style="color:' + (hasToken ? '#2e7d32' : '#d32f2f') + ';font-weight:600">' + (hasToken ? '● Token Linked in Browser' : '○ No Token Set') + '</small>' +
     '<button class="alt" id="setTokenBtn" style="padding:4px 8px;font-size:11px">' + (hasToken ? 'Update Token' : 'Set Token') + '</button></div>' +
     '<button id="cloudSave" style="background:#2e7d32;width:100%">🚀 Save Directly to Web</button>' +
@@ -304,11 +304,19 @@ function admin() {
     W.guests = W.guests.filter(function(g) { return g.name.trim(); });
     var jsonStr = JSON.stringify(W, null, 2).replace(/</g, '\\u003c');
     
-    // Remove the panel temporarily before grabbing HTML to guarantee clean output
-    var wasOpen = !!$('#panel');
-    if (wasOpen) p.remove();
+    // Completely remove both the admin panel and password modal if open
+    // so no UI elements or token-related nodes can be serialized into the document HTML
+    var panelEl = $('#panel');
+    var gateEl = $('#gate');
+    var adminBtnEl = $('#adminBtn');
+    if (panelEl) panelEl.remove();
+    if (gateEl) gateEl.remove();
+    if (adminBtnEl) adminBtnEl.remove();
+
     var full = '<!doctype html>\n' + document.documentElement.outerHTML;
-    if (wasOpen) document.body.appendChild(p);
+
+    // Restore the admin panel back to the screen
+    if (panelEl) document.body.appendChild(panelEl);
 
     return full.replace(/(<script type="application\/json" id="data">)[\s\S]*?(<\/script>)/, function(match, start, end) {
       return start + '\n' + jsonStr + '\n' + end;
@@ -348,6 +356,12 @@ function admin() {
       var fileJson = await fileRes.json();
 
       var updatedHtml = buildFullHtml();
+
+      // Double check that no accidental ghp_ token leaked into the commit text
+      if (updatedHtml.indexOf('ghp_') !== -1) {
+        throw new Error('Safety check: token string found in HTML text. Commit aborted.');
+      }
+
       var bytes = new TextEncoder().encode(updatedHtml);
       var binary = '';
       for (var i = 0; i < bytes.length; i++) {
