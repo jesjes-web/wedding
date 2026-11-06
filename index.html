@@ -82,8 +82,6 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 <script>
 var REPO_OWNER = 'jesjes-web';
 var REPO_NAME = 'wedding';
-// Put your token inside the single quotes below:
-var GH_TOKEN = 'PASTE_YOUR_GHP_TOKEN_HERE';
 
 var D = JSON.parse(document.getElementById('data').textContent);
 var W = null;
@@ -180,13 +178,15 @@ function admin() {
 
   p.innerHTML = '<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>' +
     '<div class="bar" style="top:0;position:sticky;z-index:2;background:#fffaf5;border-bottom:1px solid #e0d0c0;padding-bottom:10px">' +
-    '<button id="cloudSave" style="background:#2e7d32;width:100%">🚀 Save Directly to Web</button>' +
+    '<label style="margin:0 0 4px 0">GitHub Token</label>' +
+    '<input type="password" id="ghToken" value="' + (localStorage.getItem('gh_token') || '') + '" placeholder="Paste ghp_ token here once">' +
+    '<button id="cloudSave" style="background:#2e7d32;width:100%;margin-top:6px">🚀 Save Directly to Web</button>' +
     '<div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div></div>' +
     '<label>Names of the couple</label><input id="a1" value="' + esc(W.couple) + '">' +
     '<label>Venue</label><input id="a2" value="' + esc(W.venue) + '">' +
     '<div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="' + esc(W.date) + '"></div>' +
     '<div style="flex:1"><label>Ceremony time</label><input id="a4" type="time" value="' + esc(W.time) + '"></div></div>' +
-    '<label>Welcome message</label><textarea id="a5">' + esc(W.welcome) + '</textarea>' +
+    '<label>Welcome message</label><textarea id="a5">${esc(W.welcome)}</textarea>' +
     '<label><input type="checkbox" id="a6" style="width:auto" ' + (W.showSeats ? 'checked' : '') + '> Show seat lookup to guests</label>' +
     '<h3>Prenup photo background</h3>' +
     '<label>Background image URL or file name</label><input id="a7" value="' + esc(W.bg) + '" placeholder="prenup.jpg">' +
@@ -291,14 +291,21 @@ function admin() {
   }
 
   $('#cloudSave').onclick = async function() {
+    var tokenInput = $('#ghToken').value.trim();
     var st = $('#st');
+    if (!tokenInput) {
+      st.style.color = '#d32f2f';
+      st.textContent = 'Please enter your GitHub token above.';
+      return;
+    }
+    localStorage.setItem('gh_token', tokenInput);
     st.style.color = '#1976d2';
     st.textContent = 'Saving directly to GitHub...';
 
     try {
       var url = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/index.html';
-      var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + GH_TOKEN } });
-      if (!res.ok) throw new Error('Could not connect to GitHub. Check repository permissions.');
+      var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + tokenInput } });
+      if (!res.ok) throw new Error('Invalid token or repository access denied (Status: ' + res.status + ')');
       var fileJson = await res.json();
 
       var updatedHtml = buildFullHtml();
@@ -307,7 +314,7 @@ function admin() {
       var putRes = await fetch(url, {
         method: 'PUT',
         headers: {
-          'Authorization': 'Bearer ' + GH_TOKEN,
+          'Authorization': 'Bearer ' + tokenInput,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -317,9 +324,9 @@ function admin() {
         })
       });
 
-      if (!putRes.ok) throw new Error('GitHub rejected update. Check permissions.');
+      if (!putRes.ok) throw new Error('GitHub rejected save. Verify token has repo permissions.');
       st.style.color = '#2e7d32';
-      st.textContent = '✅ Saved! Live changes ready in ~60 seconds.';
+      st.textContent = '✅ Saved! Changes live in ~60 seconds.';
       D = JSON.parse(JSON.stringify(W));
       view();
     } catch (err) {
@@ -343,7 +350,6 @@ function admin() {
 
 view();
 
-// Always show the admin button in the corner:
 var b = document.createElement('button');
 b.id = 'adminBtn';
 b.textContent = '⚙ Open Admin Panel';
