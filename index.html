@@ -36,7 +36,7 @@ button.alt{background:#e8dcd2;color:#5a3d31}
 .sw{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .sw i{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14px}
-#adminBtn{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#adminBtn{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.3);background:#2e7d32}
 #panel{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:#fffaf5;z-index:10;overflow:auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px 90px;box-shadow:-8px 0 30px rgba(0,0,0,.3)}
 #panel h3{font-family:"Cormorant Garamond",Georgia,serif;font-size:24px;margin:22px 0 8px;color:#7a4b3a}
 #panel label{display:block;font-size:13px;margin:10px 0 4px;color:#6b574d}
@@ -58,7 +58,7 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
   "bg": "",
   "showSeats": true,
   "photoLink": "",
-  "palette": "#d9a7a0,#c9b79c,#9caf88,#f3ece4",
+  "palette": "#7caad0,#a8c5db,#e8edf3,#dfd3c3",
   "rules": [
     "Please arrive 30 minutes before the ceremony.",
     "Kindly silence your phones during the ceremony.",
@@ -82,6 +82,8 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 <script>
 var REPO_OWNER = 'jesjes-web';
 var REPO_NAME = 'wedding';
+// Put your token inside the single quotes below:
+var GH_TOKEN = 'PASTE_YOUR_GHP_TOKEN_HERE';
 
 var D = JSON.parse(document.getElementById('data').textContent);
 var W = null;
@@ -170,12 +172,16 @@ function search() {
 }
 
 function admin() {
+  if ($('#panel')) return;
   W = JSON.parse(JSON.stringify(D));
   var p = document.createElement('div');
   p.id = 'panel';
   document.body.appendChild(p);
 
   p.innerHTML = '<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>' +
+    '<div class="bar" style="top:0;position:sticky;z-index:2;background:#fffaf5;border-bottom:1px solid #e0d0c0;padding-bottom:10px">' +
+    '<button id="cloudSave" style="background:#2e7d32;width:100%">🚀 Save Directly to Web</button>' +
+    '<div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div></div>' +
     '<label>Names of the couple</label><input id="a1" value="' + esc(W.couple) + '">' +
     '<label>Venue</label><input id="a2" value="' + esc(W.venue) + '">' +
     '<div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="' + esc(W.date) + '"></div>' +
@@ -194,13 +200,7 @@ function admin() {
     '<label>Color palette (hex codes, comma separated)</label><input id="b2" value="' + esc(W.palette) + '">' +
     '<h3>Rules (one per line)</h3><textarea id="b3">' + esc(W.rules.join('\n')) + '</textarea>' +
     '<h3>Guest photo upload</h3><label>Link to shared album (must start with https://)</label><input id="b4" value="' + esc(W.photoLink) + '" placeholder="https://photos.app.goo.gl/...">' +
-    '<h3>Auto-Sync to GitHub</h3>' +
-    '<label>GitHub Personal Access Token (PAT)</label>' +
-    '<input type="password" id="ghToken" value="' + (localStorage.getItem('gh_token') || '') + '" placeholder="ghp_xxxxxxxxxxxx">' +
-    '<div class="bar">' +
-    '<button id="cloudSave" style="background:#2e7d32">🚀 Save Directly to Web</button>' +
-    '<button id="save" class="alt">💾 Download File</button>' +
-    '<div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div></div>';
+    '<div style="margin-top:20px"><button id="save" class="alt" style="width:100%">💾 Download Backup File</button></div>';
 
   function renderGuestList() {
     var gl = $('#gl');
@@ -291,21 +291,14 @@ function admin() {
   }
 
   $('#cloudSave').onclick = async function() {
-    var token = $('#ghToken').value.trim();
     var st = $('#st');
-    if (!token) {
-      st.style.color = '#d32f2f';
-      st.textContent = 'Please paste your GitHub Personal Access Token above.';
-      return;
-    }
-    localStorage.setItem('gh_token', token);
     st.style.color = '#1976d2';
     st.textContent = 'Saving directly to GitHub...';
 
     try {
       var url = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/index.html';
-      var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
-      if (!res.ok) throw new Error('Could not find repository file. Check token.');
+      var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + GH_TOKEN } });
+      if (!res.ok) throw new Error('Could not connect to GitHub. Check repository permissions.');
       var fileJson = await res.json();
 
       var updatedHtml = buildFullHtml();
@@ -314,7 +307,7 @@ function admin() {
       var putRes = await fetch(url, {
         method: 'PUT',
         headers: {
-          'Authorization': 'Bearer ' + token,
+          'Authorization': 'Bearer ' + GH_TOKEN,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -326,7 +319,7 @@ function admin() {
 
       if (!putRes.ok) throw new Error('GitHub rejected update. Check permissions.');
       st.style.color = '#2e7d32';
-      st.textContent = '✅ Saved to GitHub! Your site will update in ~60 seconds.';
+      st.textContent = '✅ Saved! Live changes ready in ~60 seconds.';
       D = JSON.parse(JSON.stringify(W));
       view();
     } catch (err) {
@@ -350,47 +343,12 @@ function admin() {
 
 view();
 
-(function() {
-  try {
-    if (location.hash === '#admin') {
-      var b = document.createElement('button');
-      b.id = 'adminBtn';
-      b.textContent = '⚙ Admin panel';
-      b.onclick = function() {
-        if ($('#panel') || $('#gate')) return;
-        var H = '87b57d68d157dc28e622efff8008d75e09a05bf10bcbcbbb39a3582058344785';
-        var sha = async function(s) {
-          return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(function(x) {
-            return x.toString(16).padStart(2, '0');
-          }).join('');
-        };
-        var g = document.createElement('div');
-        g.id = 'gate';
-        g.style.cssText = 'position:fixed;inset:0;z-index:20;background:rgba(30,18,14,.7);display:flex;align-items:center;justify-content:center;padding:20px';
-        g.innerHTML = '<div class="card" style="max-width:340px;width:100%;margin:0"><h2>Admin password</h2><input id="pw" type="password" placeholder="Enter password" autocomplete="off"><div id="pe" style="color:#a33;font-size:13px;min-height:20px;margin:6px 0"></div><div class="row"><button id="pok">Unlock</button><button class="alt" id="pno">Cancel</button></div></div>';
-        document.body.appendChild(g);
-        var pw = g.querySelector('#pw');
-        var go = async function() {
-          try {
-            if (await sha(pw.value) === H) {
-              g.remove();
-              admin();
-            } else {
-              g.querySelector('#pe').textContent = 'Wrong password. Please try again.';
-            }
-          } catch (_) {
-            g.querySelector('#pe').textContent = 'Could not verify password.';
-          }
-        };
-        g.querySelector('#pok').onclick = go;
-        g.querySelector('#pno').onclick = function() { g.remove(); };
-        pw.onkeydown = function(e) { if (e.key === 'Enter') go(); };
-        pw.focus();
-      };
-      document.body.appendChild(b);
-    }
-  } catch (_) {}
-})();
+// Always show the admin button in the corner:
+var b = document.createElement('button');
+b.id = 'adminBtn';
+b.textContent = '⚙ Open Admin Panel';
+b.onclick = admin;
+document.body.appendChild(b);
 </script>
 </body>
 </html>
