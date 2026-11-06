@@ -82,6 +82,7 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 <script>
 var REPO_OWNER = 'jesjes-web';
 var REPO_NAME = 'wedding';
+var TARGET_FILE = 'index.html';
 
 var D = JSON.parse(document.getElementById('data').textContent);
 var W = null;
@@ -179,14 +180,14 @@ function admin() {
   p.innerHTML = '<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>' +
     '<div class="bar" style="top:0;position:sticky;z-index:2;background:#fffaf5;border-bottom:1px solid #e0d0c0;padding-bottom:10px">' +
     '<label style="margin:0 0 4px 0">GitHub Token</label>' +
-    '<input type="password" id="ghToken" value="' + (localStorage.getItem('gh_token') || '') + '" placeholder="Paste ghp_ token here once">' +
+    '<input type="password" id="ghToken" value="' + (localStorage.getItem('gh_token') || '') + '" placeholder="Paste ghp_ token here">' +
     '<button id="cloudSave" style="background:#2e7d32;width:100%;margin-top:6px">🚀 Save Directly to Web</button>' +
     '<div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div></div>' +
     '<label>Names of the couple</label><input id="a1" value="' + esc(W.couple) + '">' +
     '<label>Venue</label><input id="a2" value="' + esc(W.venue) + '">' +
     '<div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="' + esc(W.date) + '"></div>' +
     '<div style="flex:1"><label>Ceremony time</label><input id="a4" type="time" value="' + esc(W.time) + '"></div></div>' +
-    '<label>Welcome message</label><textarea id="a5">${esc(W.welcome)}</textarea>' +
+    '<label>Welcome message</label><textarea id="a5">' + esc(W.welcome) + '</textarea>' +
     '<label><input type="checkbox" id="a6" style="width:auto" ' + (W.showSeats ? 'checked' : '') + '> Show seat lookup to guests</label>' +
     '<h3>Prenup photo background</h3>' +
     '<label>Background image URL or file name</label><input id="a7" value="' + esc(W.bg) + '" placeholder="prenup.jpg">' +
@@ -300,33 +301,72 @@ function admin() {
     }
     localStorage.setItem('gh_token', tokenInput);
     st.style.color = '#1976d2';
-    st.textContent = 'Saving directly to GitHub...';
+    st.textContent = 'Checking repository details...';
 
     try {
-      var url = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/index.html';
-      var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + tokenInput } });
-      if (!res.ok) throw new Error('Invalid token or repository access denied (Status: ' + res.status + ')');
-      var fileJson = await res.json();
+      // 1. Fetch repo details to get the exact default branch
+      var repoRes = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME, {
+        headers: {
+          'Authorization': 'token ' + tokenInput,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      if (!repoRes.ok) {
+        var rErr = await repoRes.json();
+        throw new Error('Access denied: ' + (rErr.message || repoRes.statusText));
+      }
+      var repoData = await repoRes.json();
+      var defaultBranch = repoData.default_branch || 'main';
 
+      // 2. Fetch fresh file SHA with cache-busting timestamp
+      var fileUrl = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + TARGET_FILE + '?ref=' + defaultBranch + '&_t=' + Date.now();
+      var fileRes = await fetch(fileUrl, {
+        headers: {
+          'Authorization': 'token ' + tokenInput,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      if (!fileRes.ok) {
+        var fErr = await fileRes.json();
+        throw new Error('File lookup failed: ' + (fErr.message || fileRes.statusText));
+      }
+      var fileJson = await fileRes.json();
+
+      st.textContent = 'Committing changes to ' + defaultBranch + '...';
+
+      // 3. UTF-8 safe base64 encoding
       var updatedHtml = buildFullHtml();
-      var b64 = btoa(unescape(encodeURIComponent(updatedHtml)));
+      var bytes = new TextEncoder().encode(updatedHtml);
+      var binary = '';
+      for (var i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      var b64 = btoa(binary);
 
-      var putRes = await fetch(url, {
+      // 4. PUT updated content
+      var putUrl = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + TARGET_FILE;
+      var putRes = await fetch(putUrl, {
         method: 'PUT',
         headers: {
-          'Authorization': 'Bearer ' + tokenInput,
+          'Authorization': 'token ' + tokenInput,
+          'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           message: 'Update wedding guest list and site details',
           content: b64,
-          sha: fileJson.sha
+          sha: fileJson.sha,
+          branch: defaultBranch
         })
       });
 
-      if (!putRes.ok) throw new Error('GitHub rejected save. Verify token has repo permissions.');
+      if (!putRes.ok) {
+        var pErr = await putRes.json();
+        throw new Error('Save rejected: ' + (pErr.message || putRes.status));
+      }
+
       st.style.color = '#2e7d32';
-      st.textContent = '✅ Saved! Changes live in ~60 seconds.';
+      st.textContent = '✅ Saved! Changes will go live on the site in ~60 seconds.';
       D = JSON.parse(JSON.stringify(W));
       view();
     } catch (err) {
