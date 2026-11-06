@@ -44,9 +44,11 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 </style></head><body>
 <div id="bg"></div>
 <div id="app"></div>
-<script type="application/json" id="data">{"couple":"Charm & Jes","date":"2027-05-15","time":"15:00","venue":"Villa Monica, Pateros","welcome":"We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!","bg":"/_blob/ad75524905799d97b85a71ad1dcc56b1","showSeats":true,"photoLink":"https://drive.google.com/drive/folders/1AOLYFy9G6b-ERUM_l-J2S3yeIk3iRhru?usp=sharing","palette":"#d9a7a0,#c9b79c,#9caf88,#f3ece4","rules":["Please arrive 30 minutes before the ceremony.","Kindly silence your phones during the ceremony.","Our photographers will capture every moment, so please keep phones away during the walk down the aisle.","Please stay in your assigned seat and table.","Enjoy, dance, and have fun!"],"dress":["Semi-formal / formal attire.","Soft earth tones and pastels are welcome (see the colors below).","Please avoid all white, ivory, and cream, which are reserved for the bride.","Comfortable shoes are a good idea, because the garden venue has grass and stone paths."],"guests":[{"name":"Jester Dalde","table":"1","seat":"1"},{"name":"Sample Guest Two","table":"1","seat":"2"},{"name":"Sample Guest Three","table":"2","seat":"1"}]}</script>
+<script type="application/json" id="data">{"couple":"Bride & Groom","date":"2027-05-15","time":"15:00","venue":"Villa Monica, Pateros","welcome":"We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!","bg":"","showSeats":true,"photoLink":"","palette":"#d9a7a0,#c9b79c,#9caf88,#f3ece4","rules":["Please arrive 30 minutes before the ceremony.","Kindly silence your phones during the ceremony.","Our photographers will capture every moment, so please keep phones away during the walk down the aisle.","Please stay in your assigned seat and table.","Enjoy, dance, and have fun!"],"dress":["Semi-formal / formal attire.","Soft earth tones and pastels are welcome (see the colors below).","Please avoid all white, ivory, and cream, which are reserved for the bride.","Comfortable shoes are a good idea, because the garden venue has grass and stone paths."],"guests":[{"name":"Jester Dalde","table":"1","seat":"1"},{"name":"Sample Guest Two","table":"1","seat":"2"},{"name":"Sample Guest Three","table":"2","seat":"1"}]}</script>
 <script>
-const SRC='<!doctype html>'+document.documentElement.outerHTML;
+const REPO_OWNER = 'jesjes-web';
+const REPO_NAME = 'wedding';
+
 let D=JSON.parse(document.getElementById('data').textContent),W=null,tick=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -95,9 +97,9 @@ function admin(){
   <label>Venue</label><input id="a2" value="${esc(W.venue)}">
   <div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="${esc(W.date)}"></div><div style="flex:1"><label>Ceremony time</label><input id="a4" type="time" value="${esc(W.time)}"></div></div>
   <label>Welcome message</label><textarea id="a5">${esc(W.welcome)}</textarea>
-  <label><input type="checkbox" id="a6" style="width:auto" ${W.showSeats?'checked':''}> Show seat lookup to guests (untick to hide until ready)</label>
+  <label><input type="checkbox" id="a6" style="width:auto" ${W.showSeats?'checked':''}> Show seat lookup to guests</label>
   <h3>Prenup photo background</h3>
-  <label>Background photo file name (upload your prenup photo to the same GitHub folder, then type its name here)</label><input id="a7" value="${esc(W.bg)}" placeholder="prenup.jpg">
+  <label>Background image URL or relative file name</label><input id="a7" value="${esc(W.bg)}" placeholder="prenup.jpg">
   <h3>Guests &amp; seats</h3>
   <div id="gl">${W.guests.map((g,i)=>`<div class="g"><input data-i="${i}" data-k="name" value="${esc(g.name)}" placeholder="Name"><input data-i="${i}" data-k="table" value="${esc(g.table)}" placeholder="Table"><input data-i="${i}" data-k="seat" value="${esc(g.seat)}" placeholder="Seat"><button class="alt" data-d="${i}">✕</button></div>`).join('')}</div>
   <button class="alt" id="add">+ Add guest</button>
@@ -105,21 +107,89 @@ function admin(){
   <h3>Dress code (one per line)</h3><textarea id="b1">${esc(W.dress.join('\n'))}</textarea>
   <label>Color palette (hex codes, comma separated)</label><input id="b2" value="${esc(W.palette)}">
   <h3>Rules (one per line)</h3><textarea id="b3">${esc(W.rules.join('\n'))}</textarea>
-  <h3>Guest photo upload</h3><label>Link to your shared album or folder (must start with https://). Leave empty to hide this section.</label><input id="b4" value="${esc(W.photoLink)}" placeholder="https://photos.app.goo.gl/...">
-  <div class="bar"><button id="save">Save &amp; download</button><span id="st" style="font-size:13px"></span></div>`;
+  <h3>Guest photo upload</h3><label>Link to your shared album (must start with https://)</label><input id="b4" value="${esc(W.photoLink)}" placeholder="https://photos.app.goo.gl/...">
+  
+  <h3>Auto-Sync to GitHub</h3>
+  <label>GitHub Personal Access Token (PAT)</label>
+  <input type="password" id="ghToken" value="${localStorage.getItem('gh_token')||''}" placeholder="ghp_xxxxxxxxxxxx">
+  <small style="color:#777;display:block;margin-bottom:10px">Saved safely in your browser's private storage.</small>
+
+  <div class="bar">
+    <button id="cloudSave" style="background:#2e7d32">🚀 Save Directly to Web</button>
+    <button id="save" class="alt">💾 Download File</button>
+    <div id="st" style="font-size:13px;width:100%;margin-top:6px;font-weight:500"></div>
+  </div>`;
   wire()};
-  const grab=()=>{W.couple=$('#a1').value;W.venue=$('#a2').value;W.date=$('#a3').value||W.date;W.time=$('#a4').value||W.time;W.welcome=$('#a5').value;W.showSeats=$('#a6').checked;W.dress=$('#b1').value.split('\n').map(s=>s.trim()).filter(Boolean);W.palette=$('#b2').value;W.photoLink=$('#b4').value.trim();W.bg=$('#a7').value.trim();W.rules=$('#b3').value.split('\n').map(s=>s.trim()).filter(Boolean)};
+  
+  const grab=()=>{
+    W.couple=$('#a1').value;W.venue=$('#a2').value;W.date=$('#a3').value||W.date;W.time=$('#a4').value||W.time;
+    W.welcome=$('#a5').value;W.showSeats=$('#a6').checked;W.dress=$('#b1').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    W.palette=$('#b2').value;W.photoLink=$('#b4').value.trim();W.bg=$('#a7').value.trim();
+    W.rules=$('#b3').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  };
+
+  const getNewHtml=()=>{
+    grab();
+    W.guests=W.guests.filter(g=>g.name.trim());
+    const json=JSON.stringify(W).replace(/</g,'\\u003c');
+    const fullHtml='<!doctype html>'+document.documentElement.outerHTML;
+    return fullHtml.replace(/(<script type="application\/json" id="data">)[\s\S]*?<\/script>/,(m,s)=>s+json+'<\/script>');
+  };
+
   const wire=()=>{
     $('#x').onclick=()=>p.remove();
     p.querySelectorAll('#gl input').forEach(e=>e.oninput=()=>{W.guests[e.dataset.i][e.dataset.k]=e.value});
     p.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{grab();W.guests.splice(+b.dataset.d,1);draw()});
     $('#add').onclick=()=>{grab();W.guests.push({name:'',table:'',seat:''});draw()};
     $('#imp').onclick=()=>{grab();$('#bulk').value.split('\n').forEach(l=>{const a=l.split(',').map(s=>s.trim());if(a[0])W.guests.push({name:a[0],table:a[1]||'',seat:a[2]||''})});draw()};
-    $('#save').onclick=()=>{grab();W.guests=W.guests.filter(g=>g.name.trim());
-      const json=JSON.stringify(W).replace(/</g,'\\u003c');
-      const out=SRC.replace(/(<script type="application\/json" id="data">)[\s\S]*?<\/script>/,(m,s)=>s+json+'<\/script>');
+    
+    // Auto-Save Directly via GitHub API
+    $('#cloudSave').onclick=async()=>{
+      const token = $('#ghToken').value.trim();
+      const status = $('#st');
+      if(!token){ status.style.color='#d32f2f'; status.textContent='Please paste your GitHub Personal Access Token above.'; return; }
+      localStorage.setItem('gh_token', token);
+      status.style.color='#1976d2'; status.textContent='Publishing changes to GitHub...';
+      
+      try {
+        const fileUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/index.html`;
+        const resGet = await fetch(fileUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+        if(!resGet.ok) throw new Error('Could not find file on GitHub. Check your token.');
+        const fileData = await resGet.json();
+        
+        const newContent = getNewHtml();
+        // UTF-8 base64 encoding
+        const base64Content = btoa(unescape(encodeURIComponent(newContent)));
+        
+        const resPut = await fetch(fileUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: 'Admin panel guest update',
+            content: base64Content,
+            sha: fileData.sha
+          })
+        });
+
+        if(!resPut.ok) throw new Error('GitHub rejected update. Check permissions.');
+        status.style.color='#2e7d32';
+        status.textContent='✅ Saved to GitHub! Your changes will be live in 60 seconds.';
+      } catch(err) {
+        status.style.color='#d32f2f';
+        status.textContent='❌ ' + err.message;
+      }
+    };
+
+    // Manual Backup Download
+    $('#save').onclick=()=>{
+      const out=getNewHtml();
       const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'text/html'}));a.download='index.html';a.click();
-      $('#st').textContent='Downloaded index.html. Upload it to GitHub (replace the old one) to go live.'};
+      $('#st').style.color='#333';
+      $('#st').textContent='Downloaded index.html as a local backup.';
+    };
   };
   draw();
 }
