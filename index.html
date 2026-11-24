@@ -42,11 +42,59 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 .g{display:grid;grid-template-columns:1fr 62px 58px 34px;gap:6px;margin-bottom:6px}
 .g button{padding:6px}
 .bar{position:sticky;bottom:0;background:#fffaf5;padding:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ===== Envelope opening intro ===== */
+#intro{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(24px,5vh,44px);padding:calc(24px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));background:radial-gradient(120% 90% at 50% 28%,#f6efe8 0%,#e4e9ee 55%,#cddbe7 100%);color:#3b2f2a;touch-action:none;overscroll-behavior:contain;overflow:hidden;transition:opacity 1s ease,transform 1.2s cubic-bezier(.22,1,.36,1),visibility 0s linear 1s}
+#intro.leave{opacity:0;transform:scale(1.08);pointer-events:none;visibility:hidden}
+.in-top{margin:0;text-align:center;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:500;font-size:clamp(24px,6.5vw,32px);color:#6c4a3c;transition:opacity .5s ease,transform .8s ease}
+.in-hint{margin:0;text-align:center;font-size:14px;letter-spacing:.04em;color:#6b574d;transition:opacity .5s ease}
+#intro.open .in-top,#intro.open .in-hint{opacity:0}
+#intro.open .in-top{transform:translateY(-10px)}
+
+.env-stage{position:relative;width:min(86vw,440px);aspect-ratio:1.45/1;transition:transform 1s cubic-bezier(.22,1,.36,1)}
+#intro.open .env-stage{transform:translateY(12%)}
+.env{position:absolute;inset:0;cursor:pointer;transition:transform .5s ease}
+@media (hover:hover){#intro:not(.open) .env:hover{transform:translateY(-5px)}}
+.env>*{position:absolute;inset:0}
+.env-back{border-radius:8px;background:linear-gradient(165deg,#86aecb,#6f98b8);box-shadow:0 26px 50px -16px rgba(40,62,82,.45),0 8px 18px -8px rgba(40,62,82,.3)}
+
+.env-card{inset:auto;left:6%;right:6%;top:7%;bottom:7%;z-index:3;background:#fffaf5;border-radius:6px;box-shadow:0 3px 14px rgba(40,62,82,.22);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;transition:transform 1.1s cubic-bezier(.34,1.3,.64,1) .85s}
+#intro.open .env-card{transform:translateY(-50%)}
+#intro.leave .env-card{transition:transform 1s ease;transform:translateY(-50%) scale(1.5)}
+.env-card .c-small{font-size:12px;letter-spacing:.04em;color:#8a6a5a;font-weight:400}
+.env-card .c-names{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:500;font-size:clamp(30px,9vw,46px);line-height:1.05;color:#7a4b3a;margin:6px 0}
+.env-card .c-rule{width:48px;height:1px;background:#d8c7ba;margin:4px 0 8px}
+.env-card .c-date{font-size:13px;font-weight:300;color:#5a4a42;line-height:1.5}
+
+.env-l,.env-r,.env-b{pointer-events:none}
+.env-l{z-index:4;background:linear-gradient(90deg,#9dbdd5,#aac7dc);clip-path:polygon(0 0,52% 52%,0 100%);border-radius:8px 0 0 8px}
+.env-r{z-index:4;background:linear-gradient(270deg,#9dbdd5,#aac7dc);clip-path:polygon(100% 0,48% 52%,100% 100%);border-radius:0 8px 8px 0}
+.env-b{z-index:5;background:linear-gradient(0deg,#a8c6dc,#bdd3e4);clip-path:polygon(0 100%,50% 45%,100% 100%);border-radius:0 0 8px 8px}
+.env-trim{z-index:6;width:100%;height:100%;pointer-events:none}
+
+.env-flap{inset:0 0 auto 0;height:58%;z-index:7;background:linear-gradient(180deg,#b3cde0,#8fb2cf);clip-path:polygon(0 0,100% 0,50% 100%);border-radius:8px 8px 0 0;transform-origin:50% 0;transform:perspective(900px) rotateX(0deg);transition:transform .9s cubic-bezier(.4,0,.2,1) .15s,z-index 0s linear .55s}
+#intro.open .env-flap{transform:perspective(900px) rotateX(180deg);z-index:2}
+
+.env-seal{inset:auto;left:50%;top:58%;z-index:10;width:clamp(58px,17vw,76px);aspect-ratio:1;padding:0;border:0;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle at 35% 30%,#b57a63,#8a5642 55%,#5e3727);box-shadow:0 8px 14px rgba(40,22,14,.4),inset 0 0 0 3px rgba(255,255,255,.12),inset 0 -3px 6px rgba(0,0,0,.25);color:#f6e9dc;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:500;font-size:clamp(17px,5vw,22px);letter-spacing:.02em;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .4s ease}
+.env-seal:before{content:"";position:absolute;inset:0;border-radius:50%;animation:sealRing 2.6s ease-out infinite}
+.env-seal:after{content:"";position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(246,233,220,.45)}
+.env-seal:focus-visible{outline:2px solid #3b2f2a;outline-offset:4px}
+@media (hover:hover){#intro:not(.open) .env:hover .env-seal{transform:translate(-50%,-50%) scale(1.07)}}
+#intro.open .env-seal{transform:translate(-50%,-90%) scale(.7);opacity:0;pointer-events:none}
+#intro.open .env-seal:before{animation:none}
+@keyframes sealRing{0%{box-shadow:0 0 0 0 rgba(138,86,66,.45)}100%{box-shadow:0 0 0 18px rgba(138,86,66,0)}}
+
+.spark{position:absolute;left:50%;top:58%;z-index:11;width:6px;height:6px;border-radius:50%;pointer-events:none;animation:burst .9s ease-out forwards}
+@keyframes burst{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  #intro,#intro *{transition-duration:.01s!important;transition-delay:0s!important;animation:none!important}
+}
 </style>
 </head>
 <body>
 <div id="bg"></div>
-<div id="app"><div class="wrap"><div class="hero"><small>Together with their families</small><h1>Jes &amp; Charm</h1><p>Friday, May 14, 2027</p><p>Villa Monica, Pateros</p><div class="cd" id="cd"><div><b>188</b><span>Days</span></div><div><b>22</b><span>Hours</span></div><div><b>39</b><span>Minutes</span></div><div><b>50</b><span>Seconds</span></div></div></div><p class="msg">We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!</p><div class="card"><h2>Find your seat</h2><div class="row"><input id="q" placeholder="Type your name…" autocomplete="off"><button id="go">Search</button></div><div id="res"></div></div><div class="card"><h2>What to wear</h2><ul><li>Semi-formal / formal attire.</li><li>Soft earth tones and pastels are welcome (see the colors below).</li><li>Please avoid all white, ivory, and cream, which are reserved for the bride.</li><li>Comfortable shoes are a good idea, because the garden venue has grass and stone paths.</li></ul><div class="sw"><i style="background:#7caad0"></i><i style="background:#a8c5db"></i><i style="background:#e8edf3"></i><i style="background:#dfd3c3"></i></div></div><div class="card"><h2>Guest guidelines</h2><ul><li>Please arrive 30 minutes before the ceremony.</li><li>Kindly silence your phones during the ceremony.</li><li>Our photographers will capture every moment, so please keep phones away during the walk down the aisle.</li><li>Please stay in your assigned seat and table.</li><li>Enjoy, dance, and have fun!</li></ul></div><div class="card"><h2>Share your photos</h2><p style="margin:0 0 14px;line-height:1.6">Took a great picture at our wedding? We’d love to see it! Tap the button to upload your photos.</p><a href="https://drive.google.com/drive/folders/1AOLYFy9G6b-ERUM_l-J2S3yeIk3iRhru?usp=sharing" target="_blank" rel="noopener" style="display:inline-block;background:#8a5642;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:500">📷 Upload your photos</a></div><footer>With love, Jes &amp; Charm · Villa Monica, Pateros</footer></div></div>
+<div id="app"><div class="wrap"><div class="hero"><small>Together with their families</small><h1>Jes &amp; Charm</h1><p>Saturday, May 15, 2027</p><p>Villa Monica, Pateros</p><div class="cd" id="cd"><div><b>188</b><span>Days</span></div><div><b>22</b><span>Hours</span></div><div><b>39</b><span>Minutes</span></div><div><b>50</b><span>Seconds</span></div></div></div><p class="msg">We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!</p><div class="card"><h2>Find your seat</h2><div class="row"><input id="q" placeholder="Type your name…" autocomplete="off"><button id="go">Search</button></div><div id="res"></div></div><div class="card"><h2>What to wear</h2><ul><li>Semi-formal / formal attire.</li><li>Soft earth tones and pastels are welcome (see the colors below).</li><li>Please avoid all white, ivory, and cream, which are reserved for the bride.</li><li>Comfortable shoes are a good idea, because the garden venue has grass and stone paths.</li></ul><div class="sw"><i style="background:#7caad0"></i><i style="background:#a8c5db"></i><i style="background:#e8edf3"></i><i style="background:#dfd3c3"></i></div></div><div class="card"><h2>Guest guidelines</h2><ul><li>Please arrive 30 minutes before the ceremony.</li><li>Kindly silence your phones during the ceremony.</li><li>Our photographers will capture every moment, so please keep phones away during the walk down the aisle.</li><li>Please stay in your assigned seat and table.</li><li>Enjoy, dance, and have fun!</li></ul></div><div class="card"><h2>Share your photos</h2><p style="margin:0 0 14px;line-height:1.6">Took a great picture at our wedding? We’d love to see it! Tap the button to upload your photos.</p><a href="https://drive.google.com/drive/folders/1AOLYFy9G6b-ERUM_l-J2S3yeIk3iRhru?usp=sharing" target="_blank" rel="noopener" style="display:inline-block;background:#8a5642;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:500">📷 Upload your photos</a></div><footer>With love, Jes &amp; Charm · Villa Monica, Pateros</footer></div></div>
 <script type="application/json" id="data">
 {
   "couple": "Jes & Charm",
@@ -302,7 +350,11 @@ function admin() {
     // Remove the panel temporarily before grabbing HTML to guarantee clean output
     var wasOpen = !!$('#panel');
     if (wasOpen) p.remove();
+    // The envelope intro is created by script on load, so keep it out of the saved file
+    var introEl = $('#intro');
+    if (introEl) introEl.remove();
     var full = '<!doctype html>\n' + document.documentElement.outerHTML;
+    if (introEl) document.body.appendChild(introEl);
     if (wasOpen) document.body.appendChild(p);
 
     return full.replace(/(<script type="application\/json" id="data">)[\s\S]*?(<\/script>)/, function(match, start, end) {
@@ -438,6 +490,68 @@ view();
 
   window.addEventListener('hashchange', checkAdmin);
   checkAdmin();
+})();
+
+/* Envelope opening intro: shown first, tap the seal to reveal the page.
+   Built here (not in the HTML) so admin saves never write it into index.html.
+   Skipped for the #admin link so you can edit without opening it each time. */
+(function() {
+  if (location.hash === '#admin') return;
+
+  var parts = String(D.couple || '').split(/\s*(?:&|\band\b)\s*/i);
+  var mono = parts.map(function(s) { return s.trim().charAt(0).toUpperCase(); })
+                  .filter(Boolean).slice(0, 2).join('&');
+
+  var el = document.createElement('div');
+  el.id = 'intro';
+  el.innerHTML =
+    '<p class="in-top">You are invited</p>' +
+    '<div class="env-stage"><div class="env" id="envBtn">' +
+      '<div class="env-back"></div>' +
+      '<div class="env-card">' +
+        '<span class="c-small">Together with their families</span>' +
+        '<span class="c-names">' + esc(D.couple) + '</span>' +
+        '<span class="c-rule"></span>' +
+        '<span class="c-date">' + esc(fmtDate()) + '<br>' + esc(D.venue) + '</span>' +
+      '</div>' +
+      '<div class="env-l"></div><div class="env-r"></div><div class="env-b"></div>' +
+      '<svg class="env-trim" viewBox="0 0 100 69" preserveAspectRatio="none" aria-hidden="true">' +
+        '<polyline points="0,69 50,31 100,69" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+        '<polyline points="0,0 52,36 0,69" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+        '<polyline points="100,0 48,36 100,69" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+      '</svg>' +
+      '<div class="env-flap"></div>' +
+      '<button type="button" class="env-seal" aria-label="Open the invitation">' + esc(mono) + '</button>' +
+    '</div></div>' +
+    '<p class="in-hint">Tap the seal to open</p>';
+  document.body.appendChild(el);
+
+  var fast = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var opened = false;
+
+  function sparkle() {
+    var stage = el.querySelector('.env-stage');
+    var colors = ['#ffffff', '#dfd3c3', '#a8c5db', '#7caad0'];
+    for (var i = 0; i < 16; i++) {
+      var s = document.createElement('i');
+      var a = (Math.PI * 2 * i) / 16 + Math.random() * 0.4;
+      var d = 60 + Math.random() * 70;
+      s.className = 'spark';
+      s.style.background = colors[i % colors.length];
+      s.style.setProperty('--dx', Math.round(Math.cos(a) * d) + 'px');
+      s.style.setProperty('--dy', Math.round(Math.sin(a) * d - 20) + 'px');
+      stage.appendChild(s);
+    }
+  }
+
+  el.querySelector('#envBtn').addEventListener('click', function() {
+    if (opened) return;
+    opened = true;
+    if (!fast) sparkle();
+    el.classList.add('open');
+    setTimeout(function() { el.classList.add('leave'); }, fast ? 200 : 2300);
+    setTimeout(function() { el.remove(); }, fast ? 400 : 3500);
+  });
 })();
 </script><button id="adminBtn">⚙ Admin panel</button>
 
