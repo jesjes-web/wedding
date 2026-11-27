@@ -25,10 +25,12 @@ body{margin:0;font-family:Jost,system-ui,sans-serif;color:#3b2f2a;background:#f6
 .card h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;font-size:28px;margin:0 0 10px;color:#7a4b3a}
 .card ul{margin:0;padding-left:20px;line-height:1.75}
 .row{display:flex;gap:8px}
-input,textarea,button{font:inherit}
-input,textarea{width:100%;padding:11px 12px;border:1px solid #d8c7ba;border-radius:10px;background:#fff;color:#3b2f2a}
-textarea{min-height:110px}
-button{border:0;border-radius:10px;padding:11px 16px;background:#8a5642;color:#fff;cursor:pointer;font-weight:500}
+.stack{display:flex;flex-direction:column;gap:10px}
+input,textarea,select,button{font:inherit}
+input,textarea,select{width:100%;padding:11px 12px;border:1px solid #d8c7ba;border-radius:10px;background:#fff;color:#3b2f2a}
+textarea{min-height:90px}
+button{border:0;border-radius:10px;padding:11px 16px;background:#8a5642;color:#fff;cursor:pointer;font-weight:500;transition:opacity .2s}
+button:disabled{opacity:.6;cursor:not-allowed}
 button.alt{background:#e8dcd2;color:#5a3d31}
 .seat{margin-top:12px;padding:14px;border-radius:12px;background:#f4e6dc;line-height:1.5}
 .seat b{font-size:19px;color:#7a4b3a}
@@ -94,15 +96,17 @@ footer{text-align:center;color:#fff;margin-top:34px;font-weight:300;font-size:14
 </head>
 <body>
 <div id="bg"></div>
-<div id="app"><div class="wrap"><div class="hero"><small>Together with their families</small><h1>Jes &amp; Charm</h1><p>Saturday, May 15, 2027</p><p>Villa Monica, Pateros</p><div class="cd" id="cd"><div><b>188</b><span>Days</span></div><div><b>22</b><span>Hours</span></div><div><b>39</b><span>Minutes</span></div><div><b>50</b><span>Seconds</span></div></div></div><p class="msg">We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!</p><div class="card"><h2>Find your seat</h2><div class="row"><input id="q" placeholder="Type your name…" autocomplete="off"><button id="go">Search</button></div><div id="res"></div></div><div class="card"><h2>What to wear</h2><ul><li>Semi-formal / formal attire.</li><li>Soft earth tones and pastels are welcome (see the colors below).</li><li>Please avoid all white, ivory, and cream, which are reserved for the bride.</li><li>Comfortable shoes are a good idea, because the garden venue has grass and stone paths.</li></ul><div class="sw"><i style="background:#7caad0"></i><i style="background:#a8c5db"></i><i style="background:#e8edf3"></i><i style="background:#dfd3c3"></i></div></div><div class="card"><h2>Guest guidelines</h2><ul><li>Please arrive 30 minutes before the ceremony.</li><li>Kindly silence your phones during the ceremony.</li><li>Our photographers will capture every moment, so please keep phones away during the walk down the aisle.</li><li>Please stay in your assigned seat and table.</li><li>Enjoy, dance, and have fun!</li></ul></div><div class="card"><h2>Share your photos</h2><p style="margin:0 0 14px;line-height:1.6">Took a great picture at our wedding? We’d love to see it! Tap the button to upload your photos.</p><a href="https://drive.google.com/drive/folders/1AOLYFy9G6b-ERUM_l-J2S3yeIk3iRhru?usp=sharing" target="_blank" rel="noopener" style="display:inline-block;background:#8a5642;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:500">📷 Upload your photos</a></div><footer>With love, Jes &amp; Charm · Villa Monica, Pateros</footer></div></div>
+<div id="app"></div>
 <script type="application/json" id="data">
 {
   "couple": "Jes & Charm",
   "date": "2027-05-15",
   "time": "15:00",
   "venue": "Villa Monica, Pateros",
-  "welcome": "We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Find your seat below and see what to wear!",
+  "welcome": "We are so happy you’re here to celebrate with us. Your presence is the greatest gift. Please confirm your attendance below!",
   "bg": "sample.png",
+  "showRsvp": true,
+  "rsvpUrl": "PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE",
   "showSeats": true,
   "photoLink": "https://drive.google.com/drive/folders/1AOLYFy9G6b-ERUM_l-J2S3yeIk3iRhru?usp=sharing",
   "palette": "#7caad0,#a8c5db,#e8edf3,#dfd3c3",
@@ -155,6 +159,26 @@ function view() {
     return '<i style="background:' + esc(c) + '"></i>';
   }).join('');
 
+  var rsvpSec = '';
+  if (D.showRsvp) {
+    rsvpSec = '<div class="card"><h2>RSVP &amp; Guest Details</h2>' +
+      '<p style="margin:0 0 14px;line-height:1.5;font-size:15px">Kindly let us know if you can make it and leave your contact details so we can keep you updated.</p>' +
+      '<form id="rsvpForm" class="stack">' +
+        '<input id="rName" placeholder="Full Name *" required>' +
+        '<div class="row">' +
+          '<select id="rAttending" style="flex:2" required>' +
+            '<option value="Yes, I will be there!">Yes, I will be there!</option>' +
+            '<option value="Sorry, I cannot attend">Sorry, I cannot attend</option>' +
+          '</select>' +
+          '<input id="rGuests" type="number" min="1" max="10" value="1" placeholder="Guests" title="Number of guests" style="flex:1">' +
+        '</div>' +
+        '<input id="rContact" placeholder="Mobile Number or Email *" required>' +
+        '<textarea id="rNotes" placeholder="Dietary restrictions or a sweet note for the couple (optional)" style="min-height:72px"></textarea>' +
+        '<button type="submit" id="rSubmit">Confirm RSVP</button>' +
+      '</form>' +
+      '<div id="rStatus"></div></div>';
+  }
+
   var photoSec = /^https:\/\//.test(D.photoLink || '')
     ? '<div class="card"><h2>Share your photos</h2><p style="margin:0 0 14px;line-height:1.6">Took a great picture at our wedding? We’d love to see it! Tap the button to upload your photos.</p><a href="' + esc(D.photoLink) + '" target="_blank" rel="noopener" style="display:inline-block;background:#8a5642;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:500">📷 Upload your photos</a></div>'
     : '<div class="card"><h2>Share your photos</h2><p style="margin:0;line-height:1.6">Photo sharing opens on our wedding day. Come back then to upload the pictures you take! 📷</p></div>';
@@ -164,6 +188,7 @@ function view() {
     '<p>' + esc(fmtDate()) + '</p><p>' + esc(D.venue) + '</p>' +
     '<div class="cd" id="cd"></div></div>' +
     '<p class="msg">' + esc(D.welcome) + '</p>' +
+    rsvpSec +
     '<div class="card"><h2>Find your seat</h2>' +
     (D.showSeats ? '<div class="row"><input id="q" placeholder="Type your name…" autocomplete="off"><button id="go">Search</button></div><div id="res"></div>' : '<p>Seating will be revealed soon. Please check back closer to the day. 💛</p>') +
     '</div>' +
@@ -180,6 +205,48 @@ function view() {
   if (q) {
     $('#go').onclick = search;
     q.onkeydown = function(e) { if (e.key === 'Enter') search(); };
+  }
+
+  var rForm = $('#rsvpForm');
+  if (rForm) {
+    rForm.onsubmit = async function(e) {
+      e.preventDefault();
+      var st = $('#rStatus');
+      var btn = $('#rSubmit');
+
+      if (!D.rsvpUrl || D.rsvpUrl.indexOf('https://script.google.com') !== 0) {
+        st.innerHTML = '<div class="seat" style="background:#fdecea;color:#a33">RSVP endpoint is not configured yet. Please add your Google Apps Script URL in the Admin Panel.</div>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      st.innerHTML = '';
+
+      var payload = {
+        name: $('#rName').value.trim(),
+        attending: $('#rAttending').value,
+        guests: $('#rGuests').value,
+        contact: $('#rContact').value.trim(),
+        notes: $('#rNotes').value.trim()
+      };
+
+      try {
+        await fetch(D.rsvpUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        st.innerHTML = '<div class="seat">Thank you, <b>' + esc(payload.name) + '</b>! Your response has been recorded. 💛</div>';
+        rForm.reset();
+      } catch (err) {
+        st.innerHTML = '<div class="seat" style="background:#fdecea;color:#a33">Something went wrong while sending. Please check your connection and try again.</div>';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Confirm RSVP';
+      }
+    };
   }
 }
 
@@ -225,7 +292,7 @@ function admin() {
 
   p.innerHTML = '<div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">Control panel</h3><button class="alt" id="x">Close</button></div>' +
     '<div class="bar" style="top:0;position:sticky;z-index:2;background:#fffaf5;border-bottom:1px solid #e0d0c0;padding-bottom:10px">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;width:100%">' +
     '<small style="color:' + (hasToken ? '#2e7d32' : '#d32f2f') + ';font-weight:600">' + (hasToken ? '● Token Linked in Browser' : '○ No Token Set') + '</small>' +
     '<button class="alt" id="setTokenBtn" style="padding:4px 8px;font-size:11px">' + (hasToken ? 'Update Token' : 'Set Token') + '</button></div>' +
     '<button id="cloudSave" style="background:#2e7d32;width:100%">🚀 Save Directly to Web</button>' +
@@ -235,15 +302,18 @@ function admin() {
     '<div class="row"><div style="flex:1"><label>Date</label><input id="a3" type="date" value="' + esc(W.date) + '"></div>' +
     '<div style="flex:1"><label>Ceremony time</label><input id="a4" type="time" value="' + esc(W.time) + '"></div></div>' +
     '<label>Welcome message</label><textarea id="a5">' + esc(W.welcome) + '</textarea>' +
+    '<h3>RSVP (Google Sheets)</h3>' +
+    '<label><input type="checkbox" id="rShow" style="width:auto" ' + (W.showRsvp ? 'checked' : '') + '> Show RSVP form to guests</label>' +
+    '<label>Google Apps Script Web App URL</label><input id="rUrl" value="' + esc(W.rsvpUrl || '') + '" placeholder="https://script.google.com/macros/s/.../exec">' +
+    '<h3>Seating chart</h3>' +
     '<label><input type="checkbox" id="a6" style="width:auto" ' + (W.showSeats ? 'checked' : '') + '> Show seat lookup to guests</label>' +
-    '<h3>Prenup photo background</h3>' +
-    '<label>Background image URL or file name</label><input id="a7" value="' + esc(W.bg) + '" placeholder="prenup.jpg">' +
-    '<h3>Guests &amp; seats</h3>' +
-    '<div id="gl"></div>' +
+    '<div id="gl" style="margin-top:8px"></div>' +
     '<button class="alt" id="add" style="margin-top:6px">+ Add guest</button>' +
-    '<label style="margin-top:14px">Or paste many (one per line: Name, Table, Seat — or paste from Excel):</label>' +
+    '<label style="margin-top:14px">Or paste many (one per line: Name, Table, Seat — or paste from Google Sheets/Excel):</label>' +
     '<textarea id="bulk" placeholder="Maria Santos, 3, 4"></textarea>' +
     '<button class="alt" id="imp" style="margin-top:6px">Import lines</button>' +
+    '<h3>Prenup photo background</h3>' +
+    '<label>Background image URL or file name</label><input id="a7" value="' + esc(W.bg) + '" placeholder="prenup.jpg">' +
     '<h3>Dress code (one per line)</h3><textarea id="b1">' + esc(W.dress.join('\n')) + '</textarea>' +
     '<label>Color palette (hex codes, comma separated)</label><input id="b2" value="' + esc(W.palette) + '">' +
     '<h3>Rules (one per line)</h3><textarea id="b3">' + esc(W.rules.join('\n')) + '</textarea>' +
@@ -294,6 +364,8 @@ function admin() {
     W.date = $('#a3').value || W.date;
     W.time = $('#a4').value || W.time;
     W.welcome = $('#a5').value;
+    W.showRsvp = $('#rShow').checked;
+    W.rsvpUrl = $('#rUrl').value.trim();
     W.showSeats = $('#a6').checked;
     W.dress = $('#b1').value.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
     W.palette = $('#b2').value;
@@ -347,14 +419,23 @@ function admin() {
     W.guests = W.guests.filter(function(g) { return g.name.trim(); });
     var jsonStr = JSON.stringify(W, null, 2).replace(/</g, '\\u003c');
     
-    // Remove the panel temporarily before grabbing HTML to guarantee clean output
+    // Temporarily strip dynamic UI elements so the saved HTML stays clean
     var wasOpen = !!$('#panel');
     if (wasOpen) p.remove();
-    // The envelope intro is created by script on load, so keep it out of the saved file
     var introEl = $('#intro');
     if (introEl) introEl.remove();
+    var btnEl = $('#adminBtn');
+    if (btnEl) btnEl.remove();
+    var appEl = $('#app');
+    var appHtml = appEl ? appEl.innerHTML : '';
+    if (appEl) appEl.innerHTML = '';
+
     var full = '<!doctype html>\n' + document.documentElement.outerHTML;
+
+    // Restore DOM elements
+    if (appEl) appEl.innerHTML = appHtml;
     if (introEl) document.body.appendChild(introEl);
+    if (btnEl) document.body.appendChild(btnEl);
     if (wasOpen) document.body.appendChild(p);
 
     return full.replace(/(<script type="application\/json" id="data">)[\s\S]*?(<\/script>)/, function(match, start, end) {
@@ -492,9 +573,6 @@ view();
   checkAdmin();
 })();
 
-/* Envelope opening intro: shown first, tap the seal to reveal the page.
-   Built here (not in the HTML) so admin saves never write it into index.html.
-   Skipped for the #admin link so you can edit without opening it each time. */
 (function() {
   if (location.hash === '#admin') return;
 
@@ -553,7 +631,5 @@ view();
     setTimeout(function() { el.remove(); }, fast ? 400 : 3500);
   });
 })();
-</script><button id="adminBtn">⚙ Admin panel</button>
-
-
+</script>
 </body></html>
